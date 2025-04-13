@@ -1,33 +1,42 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <string>
 #include <cctype>
+#include <vector>
 
+// Cleans each line for bot consumption
 std::string cleanForBots(const std::string& line) {
-    std::string result;
+    std::ostringstream out;
     for (char ch : line) {
-        if (std::isalnum(ch) || ch == ',' || ch == '.' || ch == '-' || ch == ' ') {
-            result += ch;
+        if (std::isalnum(ch) || ch == ',' || ch == '.' || ch == '-' || std::isspace(ch)) {
+            out << ch;
         }
     }
-    return result;
+    return out.str();
 }
 
-int main() {
-    std::ifstream in("raw_data.txt");
-    std::ofstream out("formatted_data.txt");
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        std::cerr << "Usage: DataForBotsFormatter <input_file> <output_file>\n";
+        return 1;
+    }
 
-    if (!in || !out) {
-        std::cerr << "Could not open file.\n";
+    std::ifstream inFile(argv[1]);
+    std::ofstream outFile(argv[2]);
+
+    if (!inFile.is_open() || !outFile.is_open()) {
+        std::cerr << "Error opening files.\n";
         return 1;
     }
 
     std::string line;
-    while (std::getline(in, line)) {
-        std::string cleanLine = cleanForBots(line);
-        out << cleanLine << "\n";
+    while (std::getline(inFile, line)) {
+        if (line.empty()) continue;
+        std::string formatted = cleanForBots(line);
+        outFile << formatted << '\n';
     }
 
-    std::cout << "Data cleaned.\n";
+    std::cout << "Formatted data saved to " << argv[2] << "\n";
     return 0;
 }
